@@ -16,29 +16,45 @@ from openbench.metric import MetricOptions
 from openbench.dataset import DatasetConfig
 from senko_pipeline import SenkoPipeline, SenkoPipelineConfig
 
+# From Hugging Face
 DATASET_CONFIGS = {
-    "voxconverse": {
-        "dataset_id": "diarizers-community/voxconverse",
-        "split": "test",
-        "description": "VoxConverse test set"
-    },
+    # argmaxinc
     "aishell-4": {
         "dataset_id": "argmaxinc/aishell-4",
         "split": "test",
-        "description": "AISHELL-4 test set"
+    },
+    "ava-avd": {
+        "dataset_id": "argmaxinc/ava-avd",
+        "split": "test",
+    },
+    "earnings21": {
+        "dataset_id": "argmaxinc/earnings21",
+        "split": "test",
+    },
+    "ali-meetings": {
+        "dataset_id": "argmaxinc/ali-meetings",
+        "split": "test",
+    },
+    "icsi-meetings": {
+        "dataset_id": "argmaxinc/icsi-meetings",
+        "split": "test",
+    },
+    # diarizers-community
+    "voxconverse": {
+        "dataset_id": "diarizers-community/voxconverse",
+        "split": "test",
     },
     "ami-ihm": {
         "dataset_id": "diarizers-community/ami",
         "subset": "ihm",
         "split": "test",
-        "description": "AMI IHM (Individual Headset Microphone) test set"
     },
     "ami-sdm": {
         "dataset_id": "diarizers-community/ami",
         "subset": "sdm",
         "split": "test",
-        "description": "AMI SDM (Single Distant Microphone) test set"
-    }
+    },
+
 }
 
 # Create benchmark configuration for specified datasets.
@@ -50,7 +66,6 @@ def create_benchmark_config(datasets: List[str], num_samples: int = None) -> Ben
             raise ValueError(f"Unknown dataset: {dataset_name}. Available: {list(DATASET_CONFIGS.keys())}")
 
         config = DATASET_CONFIGS[dataset_name].copy()
-        config.pop("description", None)  # Remove description field
 
         # Add num_samples if specified (for testing)
         if num_samples:
