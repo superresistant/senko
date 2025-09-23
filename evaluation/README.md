@@ -1,57 +1,36 @@
-# Senko Evaluations
-Settings `collar=0.25` and `skip_overlap=False` were used for all evaluations.
+# Senko Evaluation via OpenBench
+This directory contains scripts to evaluate the Senko diarization pipeline using the [OpenBench](https://github.com/argmaxinc/OpenBench) benchmarking framework by Argmax. This allows for standardized, reproducible evaluation and comparison with other diarization systems.
 
-Evaluations were performed using `eval.py`.
+## Setup
+```sh
+# Install basic dependencies
+uv sync
 
-### VoxConverse
-A dataset of conversational speech from YouTube videos. Primarily English, with a bit of other European languages.
+# Install OpenBench
+uv pip install "git+https://github.com/argmaxinc/OpenBench"
 
-<center>
+# Install Senko
+    # For NVIDIA GPUs with CUDA compute capability >= 7.5 (~GTX 16 series and newer)
+    uv pip install "git+https://github.com/narcotic-sh/senko.git[nvidia]"
 
-| Device | VAD | Clustering Location | Global DER | Global RTF | System |
-|:--------:|:-----:|:-------------------:|:------------:|:------------:|:------------:|
-| `cuda` | pyannote | CPU | 10.5% | 0.0021401 | RTX 5090 + Ryzen 9 9950X |
-| `coreml` | pyannote | CPU | 10.8% | 0.0020203 | Apple M3 |
-| `cuda` | pyannote | GPU | 14.5% | 0.0015595 | RTX 5090 + Ryzen 9 9950X |
+    # For NVIDIA GPUs with CUDA compute capability < 7.5 (~GTX 10 series and older)
+    uv pip install "git+https://github.com/narcotic-sh/senko.git[nvidia-old]"
 
-</center>
+    # For Mac (macOS 14+) and CPU execution on all other platforms
+    uv pip install "git+https://github.com/narcotic-sh/senko.git"
+```
 
-### AISHELL-4
-A dataset of meeting recordings in Mandarin Chinese.
+## Run Evaluation
+The script will auto-download the datasets.
+```sh
+# Evaluate specific dataset
+uv run evaluate.py --dataset voxconverse
 
-<center>
+# All datasets
+uv run evaluate.py --all-datasets
 
-| Device | VAD | Clustering Location | Global DER | Global RTF | System |
-|:--------:|:-----:|:-------------------:|:------------:|:------------:|:------------:|
-| `cuda` | pyannote | GPU | 9.3% | 0.0015444 | RTX 5090 + Ryzen 9 9950X |
-| `cuda` | pyannote | CPU | 9.4% | 0.0034435 | RTX 5090 + Ryzen 9 9950X |
-| `coreml` | pyannote | CPU | 9.5% | 0.0036052 | Apple M3 |
+# Only a few samples
+uv run evaluate.py --dataset voxconverse --num-samples 10
 
-</center>
-
-### AMI
-A dataset of meeting recordings in English, with participants recorded using headset and distant microphones.
-
-#### IHM (Individual Headset Microphone)
-
-<center>
-
-| Device | VAD | Clustering Location | Global DER | Global RTF | System |
-|:--------:|:-----:|:-------------------:|:------------:|:------------:|:------------:|
-| `cuda` | pyannote | GPU | 24.9% | 0.0014214 | RTX 5090 + Ryzen 9 9950X |
-| `cuda` | pyannote | CPU | 24.9% | 0.0028280 | RTX 5090 + Ryzen 9 9950X |
-| `coreml` | pyannote | CPU | 25.2% | 0.0030760 | Apple M3 |
-
-</center>
-
-#### SDM (Single Distant Microphone)
-
-<center>
-
-| Device | VAD | Clustering Location | Global DER | Global RTF | System |
-|:--------:|:-----:|:-------------------:|:------------:|:------------:|:------------:|
-| `cuda` | pyannote | GPU | 24.9% | 0.0014103 | RTX 5090 + Ryzen 9 9950X |
-| `cuda` | pyannote | CPU | 24.9% | 0.0028629 | RTX 5090 + Ryzen 9 9950X |
-| `coreml` | pyannote | CPU | 30.7% | 0.0029834 | Apple M3 |
-
-</center>
+# [--device, --vad, --clustering] options also available; see Senko DOCS.md
+```

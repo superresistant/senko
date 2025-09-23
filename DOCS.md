@@ -26,10 +26,10 @@ result_data = diarizer.diarize(wav_path='audio.wav', accurate=None, generate_col
 ```
 #### Parameters
 - `wav_path`: Path to the audio file (16kHz mono 16-bit WAV format)
-- `accurate`: Use slightly shorter subsegments & smaller shift for better accuracy (`None`, `True`, `False`)
+- `accurate`: Use shorter subsegments & smaller shift for (very slightly) better accuracy (`None`, `True`, `False`)
     - `None` (default): Auto-enables if `device == 'cuda'` and `vad == 'pyannote'`
-    - `True`: Forces accurate mode (a bit slower but more precise)
-    - `False`: Forces normal mode (faster but a bit less accurate)
+    - Accuracy difference not stark enough in my testing to warrant turning this on for when not `device == 'cuda'` and `vad == 'pyannote'`.
+    - Only reason to turn on would be to get better output parity with `cuda` if on `coreml` or `cpu`.
 - `generate_colors`: Whether to generate speaker color sets for visualization
 
 #### Returns
