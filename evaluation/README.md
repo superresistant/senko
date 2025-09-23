@@ -23,13 +23,13 @@ uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git
 The script will auto-download the datasets.
 ```sh
 # Evaluate specific dataset
-uv run evaluate.py --dataset voxconverse
+python evaluate.py --dataset voxconverse
 
 # All datasets
-uv run evaluate.py --all-datasets
+python evaluate.py --all-datasets
 
 # Only a few samples
-uv run evaluate.py --dataset voxconverse --num-samples 10
+python evaluate.py --dataset voxconverse --num-samples 10
 
 # [--device, --vad, --clustering] options also available; see Senko DOCS.md
 ```
