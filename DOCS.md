@@ -22,10 +22,14 @@ diarizer = senko.Diarizer(device='auto', vad='auto', clustering='auto', warmup=T
 
 ### `diarize()`
 ```python
-result_data = diarizer.diarize(wav_path='audio.wav', generate_colors=False)
+result_data = diarizer.diarize(wav_path='audio.wav', accurate=None, generate_colors=False)
 ```
 #### Parameters
 - `wav_path`: Path to the audio file (16kHz mono 16-bit WAV format)
+- `accurate`: Use slightly shorter subsegments & smaller shift for better accuracy (`None`, `True`, `False`)
+    - `None` (default): Auto-enables if `device == 'cuda'` and `vad == 'pyannote'`
+    - `True`: Forces accurate mode (a bit slower but more precise)
+    - `False`: Forces normal mode (faster but a bit less accurate)
 - `generate_colors`: Whether to generate speaker color sets for visualization
 
 #### Returns

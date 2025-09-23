@@ -221,7 +221,7 @@ class Diarizer:
         if hasattr(self, 'fbank_extractor') and self.fbank_extractor:
             self.lib.destroy_fbank_extractor(self.fbank_extractor)
 
-    def diarize(self, wav_path, generate_colors=False):
+    def diarize(self, wav_path, accurate=None, generate_colors=False):
         self._timing_stats = {}
         total_start = time.time()
 
@@ -250,7 +250,7 @@ class Diarizer:
             return None
 
         # Generate subsegments
-        subsegments = self._generate_subsegments(vad_segments)
+        subsegments = self._generate_subsegments(vad_segments, accurate)
 
         # Extract Fbank feature for each subsegment
         features_flat, frames_per_subsegment, subsegment_offsets, feature_dim = self._extract_fbank_features(wav_path, subsegments)
@@ -325,13 +325,13 @@ class Diarizer:
 
         return segments
 
-    def _generate_subsegments(self, vad_segments):
-        if self.vad_model_type == 'pyannote' and self.device == 'cuda':
-            segment_duration = 1.45
-            shift = segment_duration / 3.0
-        else:
-            segment_duration = 1.5
-            shift = segment_duration / 2.5
+    def _generate_subsegments(self, vad_segments, accurate):
+        # If accurate mode unspecified, turn it on only if on NVIDIA & pyannote VAD selected
+        accurate = (self.vad_model_type == 'pyannote' and self.device == 'cuda') if accurate == None else accurate
+
+        # Slightly shorter subsegments & smaller shift with accurate mode on
+        segment_duration = 1.45 if accurate else 1.5
+        shift = segment_duration / (3.0 if accurate else 2.5)
 
         subsegments = []
 
