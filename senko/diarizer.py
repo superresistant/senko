@@ -545,8 +545,9 @@ class Diarizer:
         merged_segments = self._merge_segments(new_seg_list)
 
         # Calculate total speaking time per speaker
+        # Use raw_segments to ensure we account for all speakers, even those filtered out during merging
         speaker_times = {}
-        for segment in merged_segments:
+        for segment in raw_segments:
             speaker = segment['speaker']
             duration = segment['end'] - segment['start']
             speaker_times[speaker] = speaker_times.get(speaker, 0) + duration
