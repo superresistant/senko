@@ -3,21 +3,14 @@ This directory contains scripts to evaluate the Senko diarization pipeline using
 
 ## Setup
 ```sh
-# Install basic dependencies
-uv sync
+# For NVIDIA GPUs with CUDA compute capability >= 7.5 (~GTX 16 series and newer)
+uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git[nvidia]"
 
-# Install OpenBench
-uv pip install "git+https://github.com/argmaxinc/OpenBench"
+# For NVIDIA GPUs with CUDA compute capability < 7.5 (~GTX 10 series and older)
+uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git[nvidia-old]"
 
-# Install Senko
-    # For NVIDIA GPUs with CUDA compute capability >= 7.5 (~GTX 16 series and newer)
-    uv pip install "git+https://github.com/narcotic-sh/senko.git[nvidia]"
-
-    # For NVIDIA GPUs with CUDA compute capability < 7.5 (~GTX 10 series and older)
-    uv pip install "git+https://github.com/narcotic-sh/senko.git[nvidia-old]"
-
-    # For Mac (macOS 14+) and CPU execution on all other platforms
-    uv pip install "git+https://github.com/narcotic-sh/senko.git"
+# For Mac (macOS 14+) and CPU execution on all other platforms
+uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git"
 ```
 
 ## Run Evaluation
