@@ -65,9 +65,7 @@ uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git
 # For Mac (macOS 14+) and CPU execution on all other platforms
 uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git"
 ```
-Run the evaluation script.
-
-Note: Datasets will be automatically downloaded from Hugging Face. If you run into rate limiting errors, it helps to add your Hugging Face token as an environment variable `export HF_TOKEN="..."`.
+Run the evaluation script
 ```sh
 # Evaluate on specific dataset
 python evaluate.py --dataset voxconverse
@@ -77,3 +75,4 @@ python evaluate.py --all-datasets
 
 # [--device, --vad, --clustering, --num-samples] options also available; see evaluate.py
 ```
+Note: Datasets will be automatically downloaded from Hugging Face. If you run into rate limiting, it helps to add your Hugging Face token as an environment variable `export HF_TOKEN="..."`.
