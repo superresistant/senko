@@ -121,7 +121,7 @@ def print_results(benchmark_result, datasets: List[str]):
     # Print per-dataset results
     print("\n" + "-" * 80)
     print(f"{'Dataset':<20} {'DER':<15} {'SCA':<15} {'Speed Factor':<15} {'Samples':<10}")
-    print("-" * 95)
+    print("-" * 80)
 
     for dataset_name in datasets:
         # Get global results for this dataset

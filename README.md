@@ -7,7 +7,7 @@ A very fast and accurate speaker diarization pipeline.
 
 On Apple M3, 1 hour in 7.7 seconds (~42x faster).
 
-The pipeline achieves a best score of 10.5% DER on VoxConverse, 9.3% on AISHELL-4, and 24.9% on AMI (IHM/SDM).
+The pipeline achieves a best score of 13.5% DER on VoxConverse, 13.3% on AISHELL-4, and 26.5% on AMI-IHM.
 
 Senko powers the [Zanshin](https://github.com/narcotic-sh/zanshin) media player.
 
@@ -53,20 +53,7 @@ For NVIDIA, make sure the installed driver is CUDA 12 capable (should see `CUDA 
 For setting up Senko for development, see `DEV_SETUP.md`.
 
 ## Accuracy
-Settings `collar=0.25` and `skip_overlap=False` were used for all evaluations.
-
-<center>
-
-| Benchmark | Best DER |
-|:--------:|:-----:|
-| VoxConverse | 10.5% |
-| AISHELL-4 | 9.3% |
-| AMI (IHM) | 24.9% |
-| AMI (SDM) | 24.9% |
-
-</center>
-
-See the [evaluation](/evaluation) folder for more details.
+See the [evaluation](/evaluation) directory.
 
 ## Technical Details
 Senko is a modified version of the speaker diarization pipeline found in the excellent [3D-Speaker](https://github.com/modelscope/3D-Speaker/tree/main/egs/3dspeaker/speaker-diarization) project.
