@@ -94,6 +94,7 @@ def create_benchmark_config(datasets: List[str], num_samples: int = None) -> Ben
         ),
         metrics={
             MetricOptions.DER: {},
+            MetricOptions.SCA: {},
             # Speed Factor will be calculated from prediction_time
         },
         datasets=dataset_dict
@@ -119,8 +120,8 @@ def print_results(benchmark_result, datasets: List[str]):
 
     # Print per-dataset results
     print("\n" + "-" * 80)
-    print(f"{'Dataset':<20} {'DER':<15} {'Speed Factor':<15} {'Samples':<10}")
-    print("-" * 80)
+    print(f"{'Dataset':<20} {'DER':<15} {'SCA':<15} {'Speed Factor':<15} {'Samples':<10}")
+    print("-" * 95)
 
     for dataset_name in datasets:
         # Get global results for this dataset
@@ -137,6 +138,13 @@ def print_results(benchmark_result, datasets: List[str]):
             else:
                 der_str = "N/A"
 
+            # Get SCA from global results
+            sca_result = next((gr for gr in dataset_global_results if gr.metric_name == "sca"), None)
+            if sca_result and sca_result.global_result is not None:
+                sca_str = f"{sca_result.global_result*100:.1f}%"
+            else:
+                sca_str = "N/A"
+
             # Calculate Speed Factor from sample results
             total_audio_duration = sum(s.audio_duration for s in dataset_sample_results)
             total_processing_time = sum(s.prediction_time for s in dataset_sample_results)
@@ -149,9 +157,9 @@ def print_results(benchmark_result, datasets: List[str]):
 
             num_samples = len(dataset_sample_results)
 
-            print(f"{dataset_name:<20} {der_str:<15} {sf_str:<15} {num_samples:<10}")
+            print(f"{dataset_name:<20} {der_str:<15} {sca_str:<15} {sf_str:<15} {num_samples:<10}")
         else:
-            print(f"{dataset_name:<20} {'N/A':<15} {'N/A':<15} {'0':<10}")
+            print(f"{dataset_name:<20} {'N/A':<15} {'N/A':<15} {'N/A':<15} {'0':<10}")
 
     total_audio = 0
     total_time = 0
