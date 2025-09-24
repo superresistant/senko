@@ -7,7 +7,7 @@ A very fast and accurate speaker diarization pipeline.
 
 On Apple M3, 1 hour in 7.7 seconds (~42x faster).
 
-The pipeline achieves a best score of 13.5% DER on VoxConverse, 13.3% on AISHELL-4, and 26.5% on AMI-IHM.
+The pipeline achieves a best score of 13.5% DER on VoxConverse, 13.3% on AISHELL-4, and 26.5% on AMI-IHM. See the [evaluation](/evaluation) directory for more benchmarks and comparison with other diarization systems.
 
 Senko powers the [Zanshin](https://github.com/narcotic-sh/zanshin) media player.
 
