@@ -13,7 +13,7 @@ Senko powers the [Zanshin](https://github.com/narcotic-sh/zanshin) media player.
 
 ## Usage
 ```python
-import senko, json
+import senko
 
 diarizer = senko.Diarizer(device='auto', warmup=True, quiet=False)
 
