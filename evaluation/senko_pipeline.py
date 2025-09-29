@@ -27,7 +27,7 @@ class SenkoPipelineConfig(DiarizationPipelineConfig):
     )
     warmup: bool = Field(
         default=True,
-        description="Warm up CAM++ embeddings model and clustering objects during initialization"
+        description="Warm up CAM++ embedding model and clustering objects during initialization"
     )
     quiet: bool = Field(
         default=True,

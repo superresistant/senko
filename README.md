@@ -62,7 +62,7 @@ It consists of four stages: VAD (voice activity detection), Fbank feature extrac
 The following modifications have been made:
 - VAD model has been swapped from FSMN-VAD to either Pyannote [segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0) or [Silero VAD](https://github.com/snakers4/silero-vad)
 - Fbank feature extraction is done fully upfront, in C++, using all available CPU cores
-- Batched inference of CAM++ embeddings model
+- Batched inference of CAM++ embedding model
 - Clustering when on NVIDIA (with a GPU of CUDA compute capability 7.0+) can be done on the GPU through [RAPIDS](https://docs.rapids.ai/api/cuml/stable/zero-code-change/)
 
 ## FAQ

@@ -134,8 +134,8 @@ class Diarizer:
         ## Embeddings ##
         ################
 
-        # Load embeddings model
-        with timed_operation("Loading embeddings model ........", self.quiet):
+        # Load embedding model
+        with timed_operation("Loading embedding model ........", self.quiet):
             # CoreML
             if self.device == 'coreml':
                 with suppress_stdout_stderr():
@@ -155,9 +155,9 @@ class Diarizer:
                 self.embeddings_model.eval()
                 self.embeddings_model.to(self.torch_device)
 
-        # Warm up embeddings model
+        # Warm up embedding model
         if warmup:
-            with timed_operation("Warming up embeddings model .....", self.quiet):
+            with timed_operation("Warming up embedding model .....", self.quiet):
                 if self.device == 'coreml':
                     for i in range(64):
                         dummy_input = np.random.randn(self.coreml_batch_size, self.coreml_fixed_frames, 80).astype(np.float32)

@@ -16,7 +16,7 @@ diarizer = senko.Diarizer(device='auto', vad='auto', clustering='auto', warmup=T
     - `auto` uses GPU clustering for CUDA devices with compute capability >= 7.0, CPU clustering otherwise
     - `gpu` uses GPU clustering on CUDA devices with compute capability >= 7.0, falls back to CPU clustering with warning otherwise
     - `cpu` forces CPU clustering
-- `warmup`: Warm up CAM++ embeddings model and clustering objects during initialization
+- `warmup`: Warm up CAM++ embedding model and clustering objects during initialization
     - If warmup is not done, the first few runs of the pipeline will be a bit slower
 - `quiet`: Suppress progress updates and all other output to stdout
 
