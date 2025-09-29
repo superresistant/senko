@@ -1,7 +1,7 @@
 # Pyannote `segmentation-3.0` CoreML
 This directory contains code for interfacing with the Pyannote `segmentation-3.0` CoreML converted model, using it to run VAD (voice activity detection).
 
-The model conversion as well as all the code is taken from the excellent FluidAudio project by Fluid Inference:
+The converted model as well as all the interfacing code is taken from the excellent [FluidAudio](https://github.com/FluidInference/FluidAudio) project by Fluid Inference:
 - CoreML model: [https://huggingface.co/FluidInference/speaker-diarization-coreml](https://huggingface.co/FluidInference/speaker-diarization-coreml)
 - Interfacing code: [https://github.com/FluidInference/FluidAudio](https://github.com/FluidInference/FluidAudio)
 
