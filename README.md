@@ -124,5 +124,5 @@ Join the [Discord](https://discord.gg/Nf7m5Ftk3c) server to ask questions, sugge
 - Experiment with `torch.compile()`
 - Experiment with Modular [MAX](https://www.modular.com/blog/bring-your-own-pytorch-model) engine (faster CPU inference speed?)
 - Experiment with [Resonate](https://alexandrefrancois.org/Resonate/) for superior audio feature extraction
-- Background noise removal ([DeepFilterNet](https://github.com/Rikorose/DeepFilterNet))
+- Background noise removal ([DeepFilterNet](https://github.com/Rikorose/DeepFilterNet)), [speech enhancement](https://github.com/nanless/universal-speech-enhancement)
 - Live progress reporting
