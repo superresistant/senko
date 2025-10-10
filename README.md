@@ -56,7 +56,7 @@ For setting up Senko for development, see `DEV_SETUP.md`.
 See the [evaluation](/evaluation) directory.
 
 ## Technical Details
-Senko is a modified version of the speaker diarization pipeline found in the excellent [3D-Speaker](https://github.com/modelscope/3D-Speaker/tree/main/egs/3dspeaker/speaker-diarization) project.
+Senko is a heavily optimized and slightly modified version of the speaker diarization pipeline found in the excellent [3D-Speaker](https://github.com/modelscope/3D-Speaker/tree/main/egs/3dspeaker/speaker-diarization) project.
 It consists of four stages: VAD (voice activity detection), Fbank feature extraction, speaker embeddings generation, and clustering (spectral or UMAP+HDBSCAN).
 
 The following modifications have been made:
