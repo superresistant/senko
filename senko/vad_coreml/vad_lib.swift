@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreML
+import Darwin
 import AVFoundation
 import Accelerate
 
@@ -67,7 +68,8 @@ public enum ANEMemoryUtils {
             dataType: dataType,
             strides: strides,
             deallocator: { bytes in
-                bytes.deallocate()
+                // `posix_memalign` requires `free` for cleanup; `deallocate()` would trap.
+                Darwin.free(bytes)
             }
         )
 
@@ -102,14 +104,18 @@ public enum ANEMemoryUtils {
         switch dataType {
         case .float16:
             return 2
-        case .float32:
+        case .float32, .float:
             return 4
         case .float64, .double:
             return 8
         case .int32:
-            return 4
+            return MemoryLayout<Int32>.stride
+        #if swift(>=6.2)
+        case .int8:
+            return MemoryLayout<Int8>.stride
+        #endif
         @unknown default:
-            return 4
+            return MemoryLayout<Float>.stride
         }
     }
 }
