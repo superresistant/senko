@@ -12,6 +12,7 @@ add_custom_command(
         -emit-library
         -o ${OUTPUT_LIB}
         -O
+        -target arm64-apple-macosx14.0
         ${SWIFT_SOURCE}
     DEPENDS ${SWIFT_SOURCE}
     COMMENT "Compiling Swift library with swiftc"
