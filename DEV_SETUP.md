@@ -1,10 +1,8 @@
 # Senko Development Setup Guide
 ## Pre-requisites
-- `clang` if on Linux or WSL
-    - `sudo apt update; sudo apt install clang`
+- `gcc/clang` if on Linux or WSL
 - `git`
-    - `sudo apt update; sudo apt install git` on Linux/WSL
-    - On macOS, should already have it if you have the Xcode Command Line Tools installed
+    - On macOS, comes with the Xcode Command Line Tools
 - [`uv`](https://docs.astral.sh/uv/#installation)
 
 ## Development Setup Steps
@@ -28,7 +26,7 @@ uv pip install -e "/path/to/cloned/senko[nvidia-old]"
 # For Mac (macOS 14+) and CPU execution on all other platforms
 uv pip install -e "/path/to/cloned/senko"
 ```
-For NVIDIA, make sure the installed driver is CUDA 12 capable (should see `CUDA Version: 12.x` in the top right of `nvidia-smi`)
+For NVIDIA, make sure the installed driver is CUDA 12 capable (should see `CUDA Version: 12+` in `nvidia-smi`)
 
 Now you can modify the Senko code in the cloned repository folder. Changes will be reflected immediately if only the Python code was changed; if the C++ code was changed, you'll have to run the `uv pip install -e` command to rebuild the C++ code before changes are reflected.
 

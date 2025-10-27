@@ -29,7 +29,7 @@ See `examples/diarize.py` for an interactive script, and also read `DOCS.md`
 Senko has been tested to work on Linux, macOS, and WSL, with Python version `3.11.13`.
 
 Pre-requisites:
-- `clang` - on Linux/WSL, a seperate install; on macOS, have the Xcode Developer Tools installed
+- `gcc/clang` - on Linux/WSL, a separate install; on macOS, have the Xcode Command Line Tools installed
 - [`uv`](https://docs.astral.sh/uv/#installation)
 
 Create a Python virtual environment and activate it

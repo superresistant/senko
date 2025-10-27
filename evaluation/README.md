@@ -54,7 +54,7 @@ Create a Python virtual environment and activate it
 uv venv --python 3.11.13 .venv
 source .venv/bin/activate
 ```
-Install dependancies
+Install dependencies
 ```sh
 # For NVIDIA GPUs with CUDA compute capability >= 7.5 (~GTX 16 series and newer)
 uv pip install -r requirements.txt "git+https://github.com/narcotic-sh/senko.git[nvidia]"

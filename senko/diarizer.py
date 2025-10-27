@@ -7,6 +7,7 @@ warnings.filterwarnings("ignore", message=".*torchaudio._backend.list_audio_back
 warnings.filterwarnings("ignore", message=".*torchaudio.load_with_torchcodec.*")
 warnings.filterwarnings("ignore", message=".*torchaudio.sox_effects.sox_effects.apply_effects_file.*")
 warnings.filterwarnings("ignore", message=".*torio.io._streaming_media_decoder.StreamingMediaDecoder.*")
+warnings.filterwarnings("ignore", message=".*Please use the new API settings to control TF32.*")
 
 import os
 import yaml
@@ -297,8 +298,8 @@ class Diarizer:
         if self.vad_model_type == 'pyannote':
             # CUDA
             if self.device == 'cuda':
-                torch.backends.cuda.matmul.allow_tf32 = False
-                torch.backends.cudnn.allow_tf32 = False
+                torch.backends.cuda.matmul.fp32_precision = "ieee"
+                torch.backends.cudnn.fp32_precision = "ieee"
                 vad_result = self.vad_pipeline_pyannote_cuda(wav_path)
                 segments = [(segment.start, segment.end) for segment in vad_result.get_timeline()]
             # CoreML
@@ -380,8 +381,8 @@ class Diarizer:
             return self._generate_embeddings_coreml(features_flat, frames_per_subsegment, subsegment_offsets, feature_dim)
 
         if self.vad_model_type == 'pyannote':
-            torch.backends.cuda.matmul.allow_tf32 = True
-            torch.backends.cudnn.allow_tf32 = True
+            torch.backends.cuda.matmul.fp32_precision = "tf32"
+            torch.backends.cudnn.fp32_precision = "tf32"
 
         # Move features to torch device
         big_tensor = torch.from_numpy(features_flat).to(self.torch_device)
