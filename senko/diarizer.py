@@ -24,6 +24,18 @@ from .utils import time_method, suppress_stdout_stderr, timed_operation
 
 if not config.DARWIN:
     import torch
+    torch_version_str = torch.__version__.split('+')[0]  # Remove any suffix like '+cu126'
+    torch_version = tuple(map(int, torch_version_str.split('.')[:2]))
+    use_legacy_tf32 = torch_version < (2, 9)
+    
+    def set_fp32_precision(mode='ieee'):
+        if use_legacy_tf32:
+            allow_tf32 = (mode == 'tf32')
+            torch.backends.cuda.matmul.allow_tf32 = allow_tf32
+            torch.backends.cudnn.allow_tf32 = allow_tf32
+        else:
+            torch.backends.cuda.matmul.fp32_precision = mode
+            torch.backends.cudnn.fp32_precision = mode
 
 class AudioFormatError(Exception):
     """Raised when audio file is not in the required 16kHz mono 16-bit WAV format"""
@@ -298,8 +310,7 @@ class Diarizer:
         if self.vad_model_type == 'pyannote':
             # CUDA
             if self.device == 'cuda':
-                torch.backends.cuda.matmul.fp32_precision = "ieee"
-                torch.backends.cudnn.fp32_precision = "ieee"
+                set_fp32_precision('ieee')
                 vad_result = self.vad_pipeline_pyannote_cuda(wav_path)
                 segments = [(segment.start, segment.end) for segment in vad_result.get_timeline()]
             # CoreML
@@ -380,9 +391,8 @@ class Diarizer:
         if self.device == 'coreml':
             return self._generate_embeddings_coreml(features_flat, frames_per_subsegment, subsegment_offsets, feature_dim)
 
-        if self.vad_model_type == 'pyannote':
-            torch.backends.cuda.matmul.fp32_precision = "tf32"
-            torch.backends.cudnn.fp32_precision = "tf32"
+        if self.vad_model_type == 'pyannote' and self.device == 'cuda':
+            set_fp32_precision('tf32')
 
         # Move features to torch device
         big_tensor = torch.from_numpy(features_flat).to(self.torch_device)
