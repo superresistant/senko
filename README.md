@@ -25,6 +25,8 @@ senko.save_rttm(result["merged_segments"], wav_path, 'audio_diarized.rttm')
 ```
 See `examples/diarize.py` for an interactive script, and also read `DOCS.md`
 
+Senko can also be used in a notebook, like Google Colab; see [here](https://colab.research.google.com/drive/12WBChh5cdw-RKRStr5hlFgQLPy7R950o?usp=sharing).
+
 ## Installation
 Senko has been tested to work on Linux, macOS, and WSL, with Python version `3.11.13`.
 
