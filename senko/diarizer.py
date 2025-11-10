@@ -187,7 +187,7 @@ class Diarizer:
 
         with open(config.SPECTRAL_YAML, 'r') as spectral_yaml, open(config.UMAP_HDBSCAN_YAML, 'r') as umap_hdbscan_yaml:
             self.spectral_config = yaml.safe_load(spectral_yaml)
-            self.umap_config = yaml.safe_load(umap_hdbscan_yaml)
+            self.umap_hdbscan_config = yaml.safe_load(umap_hdbscan_yaml)
 
             # Determine clustering location based on parameter or auto-selection
             if self.device != 'cuda':
@@ -217,17 +217,16 @@ class Diarizer:
                 self.clustering_location = 'cpu'
 
             self.spectral_cluster = ClusteringClass(**self.spectral_config['cluster']['args'])
-            self.umap_cluster = ClusteringClass(**self.umap_config['cluster']['args'])
+            self.umap_hdbscan_cluster = ClusteringClass(**self.umap_hdbscan_config['cluster']['args'])
 
         self._print(f'Using {self.clustering_location.upper()} clustering')
 
         # Warmup clustering objects
         if warmup:
             with timed_operation("Warming up clustering objects ...", self.quiet):
-                dummy_embeddings = np.random.randn(5000, 192).astype(np.float32)
+                dummy_embeddings = np.random.randn(4250, 192).astype(np.float32)
                 with suppress_stdout_stderr():
-                    _ = self.spectral_cluster(dummy_embeddings)
-                    _ = self.umap_cluster(dummy_embeddings)
+                    _ = self.umap_hdbscan_cluster(dummy_embeddings)
 
     def __del__(self):
         if hasattr(self, 'fbank_extractor') and self.fbank_extractor:
@@ -505,7 +504,7 @@ class Diarizer:
             if wav_length < 1200.0:                          # Use spectral clustering for short audio (< 20 min)
                 labels = self.spectral_cluster(embeddings)
             else:                                            # Use UMAP+HDBSCAN for longer audio
-                labels = self.umap_cluster(embeddings)
+                labels = self.umap_hdbscan_cluster(embeddings)
 
         # Normalize labels to consecutive integers starting from 0 (these will be incremented by 1 when creating final speaker IDs)
         new_labels = np.zeros(len(labels), dtype=int)

@@ -1,3 +1,4 @@
+import os
 import platform
 from pathlib import Path
 import importlib.resources
@@ -51,3 +52,16 @@ PYANNOTE_SEGMENTATION_COREML_MODEL_PATH = str(MODELS / 'pyannote_segmentation.ml
 EMBEDDINGS_JIT_CUDA_MODEL_PATH = str(MODELS / 'camplusplus_traced_cuda_optimized.pt')
 EMBEDDINGS_PT_MODEL_PATH = str(MODELS / 'speech_campplus_sv_zh_en_16k-common_advanced/campplus_cn_en_common.pt')
 EMBEDDINGS_COREML_PATH = str(MODELS / 'camplusplus_batch16.mlpackage')
+
+# Numba compilation caching directory (~/.cache/senko/numba_cache)
+cache_dir = Path.home() / '.cache' / 'senko' / 'numba_cache'
+cache_dir.mkdir(parents=True, exist_ok=True)
+os.environ['NUMBA_CACHE_DIR'] = str(cache_dir)
+
+# Patch numba.njit to enable disk caching for all decorated functions
+import numba
+_original_njit = numba.njit
+def cached_njit(*args, **kwargs):
+    kwargs['cache'] = True
+    return _original_njit(*args, **kwargs)
+numba.njit = cached_njit

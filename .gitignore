@@ -20,3 +20,6 @@ result/
 *.rttm
 
 audio/
+
+examples/*
+!examples/*.py
