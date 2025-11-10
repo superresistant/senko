@@ -69,6 +69,13 @@ The following modifications have been made:
 
 On Linux/WSL, both Pyannote segmentation-3.0 and CAM++ run using PyTorch, but on Mac, both models run through CoreML. The CAM++ CoreML conversion was done from scratch in this project (see [`tracing/coreml`](tracing/coreml)), but the segmentation-3.0 converted model and interfacing code is taken from the excellent [FluidAudio](https://github.com/FluidInference/FluidAudio) project by Fluid Inference.
 
+## Showcase
+| Application | Description |
+|----------|-------------|
+| [reaper_speech_diarizer](https://github.com/atmosfar/reaper_speech_diarizer) | Split a downmixed voice recording into separate tracks for each speaker in REAPER DAW |
+
+Create a PR or message on Discord if you'd like your application that uses Senko added here!
+
 ## FAQ
 <details>
 <summary>Is there any way to visualize the output diarization data?</summary>
