@@ -123,6 +123,13 @@ As for Mac, both the VAD and embeddings gen phases run on the ANE (Apple Neural 
 - If a single person makes >1 voices in the same recording (as in change the auditory texture/tone of their voice; like if they do an impression of someone else, for example), their speech will almost certainly get detected as >1 speakers.
 </details>
 
+## Troubleshooting
+If you run into Numba related errors after upgrading/downgrading the `numba` package or other packages that use it (`umap-learn`, `pynndescent`, etc.), they might be caused by failed Numba [cache invalidation](https://numba.readthedocs.io/en/stable/developer/caching.html). In such a case, clear the cache manually like so:
+```
+rm -rf ~/.cache/senko
+```
+Such errors may also appear if you have [Zanshin](https://github.com/narcotic-sh/zanshin) installed, with different package versions installed in its Python environment compared to the development venv that you're using for Senko.
+
 ## Community & Support
 Join the [Discord](https://discord.gg/Nf7m5Ftk3c) server to ask questions, suggest features, talk about Senko and Zanshin development etc.
 
