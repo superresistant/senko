@@ -49,6 +49,8 @@ Dictionary (`result_data`) containing keys:
 - `timing_stats`: Dictionary of how long each stage of the pipeline took in seconds, as well as the total time
     - Keys: `total_time`, `vad_time`, `fbank_time`, `embeddings_time`, `clustering_time`
 - `speaker_color_sets`: 10 sets of speaker colors (if requested)
+- `vad`: Voice activity detection segments
+    - List of `(start, end)` tuples in seconds produced by the VAD stage, marking every region of the audio that contains speech
 
 #### Raises
 - `senko.AudioFormatError` if audio file is not in the required 16kHz mono 16-bit WAV format
@@ -132,4 +134,13 @@ Color sets (`speaker_color_sets`):
     },
     ...
 }
+```
+VAD segments (`vad`):
+```
+[
+  (0.0, 2.1),
+  (2.4, 6.7),
+  (7.1, 10.2),
+  ...
+]
 ```

@@ -293,6 +293,7 @@ class Diarizer:
             "merged_segments": merged_segments,
             "speaker_centroids": centroids,
             "timing_stats": self._timing_stats,
+            "vad": vad_segments,
         }
 
         # Generate 10 speaker color sets (if requested)
