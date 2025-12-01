@@ -86,7 +86,11 @@ class Diarizer:
                 from pyannote.audio.pipelines import VoiceActivityDetection
                 from pyannote.audio import Model
 
-                model = Model.from_pretrained(config.PYANNOTE_SEGMENTATION_PT_MODEL_PATH, map_location=self.torch_device)
+                # Allow-list needed classes for safe weights-only loading on PyTorch 2.6+
+                from pyannote.audio.core.task import Specifications, Problem, Resolution
+                from pyannote.audio.models.segmentation import PyanNet
+                with torch.serialization.safe_globals([torch.torch_version.TorchVersion, Specifications, Problem, Resolution, PyanNet]):
+                    model = Model.from_pretrained(config.PYANNOTE_SEGMENTATION_PT_MODEL_PATH, map_location=self.torch_device)
                 self.vad_pipeline_pyannote_cuda = VoiceActivityDetection(segmentation=model)
                 self.vad_pipeline_pyannote_cuda.instantiate({
                     "min_duration_on": 0.25,  # Remove speech regions shorter than 250ms
