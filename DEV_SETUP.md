@@ -8,7 +8,7 @@
 ## Development Setup Steps
 First create and activate a Python virtual environment
 ```
-uv venv --python 3.11.13 .venv
+uv venv --python 3.13 .venv
 source .venv/bin/activate
 ```
 Clone the Senko repository

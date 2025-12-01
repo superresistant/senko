@@ -28,7 +28,7 @@ See `examples/diarize.py` for an interactive script, and also read `DOCS.md`
 Senko can also be used in a notebook, like Google Colab; see [here](https://colab.research.google.com/drive/12WBChh5cdw-RKRStr5hlFgQLPy7R950o?usp=sharing).
 
 ## Installation
-Senko has been tested to work on Linux, macOS, and WSL, with Python version `3.11.13`.
+Senko has been tested to work on Linux, macOS, and WSL.
 
 Pre-requisites:
 - `gcc/clang` - on Linux/WSL, a separate install; on macOS, have the Xcode Command Line Tools installed
@@ -36,7 +36,7 @@ Pre-requisites:
 
 Create a Python virtual environment and activate it
 ```
-uv venv --python 3.11.13 .venv
+uv venv --python 3.13 .venv
 source .venv/bin/activate
 ```
 Then install Senko
