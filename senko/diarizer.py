@@ -689,11 +689,14 @@ class Diarizer:
         for new_idx, (old_speaker, _) in enumerate(sorted_speakers, 1):
             speaker_mapping[old_speaker] = f"SPEAKER_{new_idx:02d}"
 
-        # Update all segments with new speaker IDs
-        for segment in raw_segments:
+        # Update all segments with new speaker IDs (avoid double-mapping shared dicts)
+        updated = set()
+        for segment in raw_segments + merged_segments:
+            seg_id = id(segment)
+            if seg_id in updated:
+                continue
             segment['speaker'] = speaker_mapping[segment['speaker']]
-        for segment in merged_segments:
-            segment['speaker'] = speaker_mapping[segment['speaker']]
+            updated.add(seg_id)
 
         # Update centroids with new speaker IDs
         new_centroids = {}

@@ -12,12 +12,6 @@ The following components are licensed under the Apache 2.0 License:
   Source: https://modelscope.cn/models/iic/speech_campplus_sv_zh_en_16k-common_advanced
   Paper: https://arxiv.org/abs/2303.00332
 
-- wav.h
-  Copyright (c) 2016 Personal (Binbin Zhang)
-  Original Author: Binbin Zhang (2016)
-  Original Source: https://github.com/wenet-e2e/wenet/blob/main/runtime/core/frontend/wav.h
-  Via: https://github.com/snakers4/silero-vad/blob/master/examples/cpp_libtorch/wav.h
-
 - Kaldi ASR
   Copyright: Multiple contributors including:
     - Daniel Povey and other individual contributors
