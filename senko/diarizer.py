@@ -295,6 +295,14 @@ class Diarizer:
         # VAD (voice activity detection)
         vad_segments = self._perform_vad(wav_path)
 
+        if os.getenv("DUMP_VAD"):
+            print(f"\n    VAD segments ({len(vad_segments)}):")
+            if vad_segments:
+                for start, end in vad_segments:
+                    print(f"    - {start:.3f} -> {end:.3f}")
+            else:
+                print("    (none)")
+
         if not vad_segments:
             self._print(colored("\n    No speakers detected in the audio!\n", 'yellow'))
             return None

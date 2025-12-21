@@ -7,7 +7,6 @@
 import Foundation
 import CoreML
 import Darwin
-import AVFoundation
 import Accelerate
 
 @available(macOS 13.0, iOS 16.0, *)
@@ -245,6 +244,120 @@ public class ZeroCopyDiarizerFeatureProvider: NSObject, MLFeatureProvider {
     }
 }
 
+private struct WavInfo {
+    let sampleRate: Int
+    let channels: Int
+    let bitsPerSample: Int
+    let audioFormat: Int
+    let dataOffset: Int64
+    let dataSize: Int64
+}
+
+private struct WavParseError: Error, LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
+}
+
+private func parseWavHeader(fd: Int32) throws -> WavInfo {
+    var statBuf = stat()
+    guard fstat(fd, &statBuf) == 0 else {
+        throw WavParseError(message: "Failed to stat WAV file")
+    }
+    let fileSize = Int64(statBuf.st_size)
+    guard fileSize >= 12 else {
+        throw WavParseError(message: "Invalid WAV file (too small)")
+    }
+
+    func readBytes(offset: Int64, count: Int) throws -> [UInt8] {
+        var buffer = [UInt8](repeating: 0, count: count)
+        let bytesRead = buffer.withUnsafeMutableBytes { rawBuffer -> Int in
+            guard let base = rawBuffer.baseAddress else { return 0 }
+            let readCount = pread(fd, base, count, offset)
+            return max(0, readCount)
+        }
+        if bytesRead != count {
+            throw WavParseError(message: "Failed to read WAV header")
+        }
+        return buffer
+    }
+
+    let header = try readBytes(offset: 0, count: 12)
+    let riff = String(bytes: header[0..<4], encoding: .ascii)
+    let wave = String(bytes: header[8..<12], encoding: .ascii)
+    guard riff == "RIFF", wave == "WAVE" else {
+        throw WavParseError(message: "Invalid WAV header (missing RIFF/WAVE)")
+    }
+
+    func readUInt16LE(_ bytes: [UInt8], _ offset: Int) -> Int {
+        let lo = Int(bytes[offset])
+        let hi = Int(bytes[offset + 1]) << 8
+        return lo | hi
+    }
+
+    func readUInt32LE(_ bytes: [UInt8], _ offset: Int) -> Int {
+        let b0 = Int(bytes[offset])
+        let b1 = Int(bytes[offset + 1]) << 8
+        let b2 = Int(bytes[offset + 2]) << 16
+        let b3 = Int(bytes[offset + 3]) << 24
+        return b0 | b1 | b2 | b3
+    }
+
+    var fmtFound = false
+    var dataFound = false
+    var audioFormat = 0
+    var channels = 0
+    var sampleRate = 0
+    var bitsPerSample = 0
+    var dataOffset: Int64 = 0
+    var dataSize: Int64 = 0
+
+    var offset: Int64 = 12
+    while offset + 8 <= fileSize {
+        let chunkHeader = try readBytes(offset: offset, count: 8)
+        let chunkId = String(bytes: chunkHeader[0..<4], encoding: .ascii) ?? ""
+        let chunkSize = Int64(readUInt32LE(chunkHeader, 4))
+        let chunkDataOffset = offset + 8
+
+        if chunkId == "fmt " {
+            let fmtSize = Int(min(chunkSize, 16))
+            let fmt = try readBytes(offset: chunkDataOffset, count: fmtSize)
+            audioFormat = readUInt16LE(fmt, 0)
+            channels = readUInt16LE(fmt, 2)
+            sampleRate = readUInt32LE(fmt, 4)
+            bitsPerSample = readUInt16LE(fmt, 14)
+            fmtFound = true
+        } else if chunkId == "data" {
+            dataOffset = chunkDataOffset
+            dataSize = chunkSize
+            dataFound = true
+        }
+
+        let paddedSize = chunkSize + (chunkSize % 2)
+        offset += 8 + paddedSize
+
+        if fmtFound && dataFound {
+            break
+        }
+    }
+
+    guard fmtFound, dataFound else {
+        throw WavParseError(message: "Invalid WAV file (missing fmt or data chunk)")
+    }
+
+    if dataOffset + dataSize > fileSize {
+        throw WavParseError(message: "Invalid WAV data chunk size")
+    }
+
+    return WavInfo(
+        sampleRate: sampleRate,
+        channels: channels,
+        bitsPerSample: bitsPerSample,
+        audioFormat: audioFormat,
+        dataOffset: dataOffset,
+        dataSize: dataSize
+    )
+}
+
 @available(macOS 13.0, iOS 16.0, *)
 @objc public class VADProcessor: NSObject {
     private var segmentationModel: MLModel?
@@ -312,46 +425,100 @@ public class ZeroCopyDiarizerFeatureProvider: NSObject, MLFeatureProvider {
             return []
         }
 
-        // Load audio file
-        guard let audioData = loadAudioFile(at: path) else {
-            print("Failed to load audio file")
+        do {
+            return try processStreamedWav(at: path, model: model)
+        } catch {
+            print("Failed to process audio file: \(error)")
+            return []
+        }
+    }
+
+    private func processStreamedWav(at path: String, model: MLModel) throws -> [VADSegment] {
+        let fd = open(path, O_RDONLY)
+        if fd < 0 {
+            throw WavParseError(message: "Failed to open audio file at \(path)")
+        }
+        defer {
+            _ = close(fd)
+        }
+
+        let info = try parseWavHeader(fd: fd)
+        if info.sampleRate != sampleRate {
+            throw WavParseError(message: "Unsupported WAV sample rate \(info.sampleRate)Hz; expected \(sampleRate)Hz")
+        }
+        if info.channels != 1 || info.bitsPerSample != 16 || info.audioFormat != 1 {
+            throw WavParseError(message: "Unsupported WAV format: require 16-bit PCM mono")
+        }
+
+        let bytesPerSample = info.bitsPerSample / 8
+        let totalSamples = Int(info.dataSize / Int64(bytesPerSample))
+        if totalSamples <= 0 {
             return []
         }
 
-        // Process using batch approach for better ANE utilization
-        return processBatchedAudio(audioData, model: model)
-    }
-
-    // Batch processing for better ANE utilization
-    private func processBatchedAudio(_ audioData: [Float], model: MLModel) -> [VADSegment] {
         var allSegments: [VADSegment] = []
-
-        // Pre-allocate reusable buffers for all chunks
-        let numChunks = (audioData.count + chunkSize - 1) / chunkSize
-
-        // Process chunks in batches of 64 for better ANE utilization
         let batchSize = 64
-        var chunkQueue: [(ArraySlice<Float>, Double)] = []
+        var batch: [(ArraySlice<Float>, Double)] = []
+        batch.reserveCapacity(batchSize)
 
-        // Prepare all chunks
-        for chunkOffset in stride(from: 0, to: audioData.count, by: chunkSize) {
-            let chunkEnd = min(chunkOffset + chunkSize, audioData.count)
-            let chunk = ArraySlice(audioData[chunkOffset..<chunkEnd])
-            let chunkOffsetTime = Double(chunkOffset) / Double(sampleRate)
-            chunkQueue.append((chunk, chunkOffsetTime))
+        let scale = Float(1.0 / 32768.0)
+        var offsetSamples = 0
+
+        while offsetSamples < totalSamples {
+            let samplesToRead = min(chunkSize, totalSamples - offsetSamples)
+            if samplesToRead <= 0 {
+                break
+            }
+
+            var int16Buffer = [Int16](repeating: 0, count: samplesToRead)
+            let byteOffset = info.dataOffset + Int64(offsetSamples * bytesPerSample)
+            let byteCount = samplesToRead * bytesPerSample
+
+            let bytesRead = int16Buffer.withUnsafeMutableBytes { rawBuffer -> Int in
+                guard let base = rawBuffer.baseAddress else { return 0 }
+                var totalRead = 0
+                while totalRead < byteCount {
+                    let readCount = pread(
+                        fd,
+                        base.advanced(by: totalRead),
+                        byteCount - totalRead,
+                        byteOffset + Int64(totalRead)
+                    )
+                    if readCount <= 0 {
+                        break
+                    }
+                    totalRead += readCount
+                }
+                return totalRead
+            }
+
+            let samplesRead = max(0, min(samplesToRead, bytesRead / bytesPerSample))
+            if samplesRead == 0 {
+                break
+            }
+
+            var floatBuffer = [Float](repeating: 0, count: samplesRead)
+            for i in 0..<samplesRead {
+                floatBuffer[i] = Float(int16Buffer[i]) * scale
+            }
+
+            let chunkOffsetTime = Double(offsetSamples) / Double(sampleRate)
+            batch.append((floatBuffer[0..<floatBuffer.count], chunkOffsetTime))
+
+            if batch.count >= batchSize {
+                let batchSegments = processBatch(batch, model: model)
+                allSegments.append(contentsOf: batchSegments)
+                batch.removeAll(keepingCapacity: true)
+            }
+
+            offsetSamples += samplesRead
         }
 
-        // Process in batches
-        for batchStart in stride(from: 0, to: chunkQueue.count, by: batchSize) {
-            let batchEnd = min(batchStart + batchSize, chunkQueue.count)
-            let batch = Array(chunkQueue[batchStart..<batchEnd])
-
-            // Process batch concurrently for better ANE utilization
+        if !batch.isEmpty {
             let batchSegments = processBatch(batch, model: model)
             allSegments.append(contentsOf: batchSegments)
         }
 
-        // Merge adjacent segments
         return mergeSegments(allSegments)
     }
 
@@ -446,48 +613,6 @@ public class ZeroCopyDiarizerFeatureProvider: NSObject, MLFeatureProvider {
 
         // Process segments with optimized memory access
         return processSegmentsOptimized(segmentOutput, chunkOffset: chunkOffset)
-    }
-
-    private func loadAudioFile(at path: String) -> [Float]? {
-        let fileURL = URL(fileURLWithPath: path)
-
-        guard let audioFile = try? AVAudioFile(forReading: fileURL) else {
-            print("Could not open audio file at \(path)")
-            return nil
-        }
-
-        let format = audioFile.processingFormat
-        let frameCount = AVAudioFrameCount(audioFile.length)
-
-        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
-            print("Could not create audio buffer")
-            return nil
-        }
-
-        do {
-            try audioFile.read(into: buffer)
-        } catch {
-            print("Error reading audio file: \(error)")
-            return nil
-        }
-
-        guard let floatData = buffer.floatChannelData else {
-            print("Could not get float channel data")
-            return nil
-        }
-
-        let channelData = floatData[0]
-        var audioData = Array(UnsafeBufferPointer(start: channelData, count: Int(frameCount)))
-
-        // Normalize audio to [-1, 1] range if needed
-        if let maxAbs = audioData.map({ abs($0) }).max(), maxAbs > 0 {
-            if maxAbs > 1.0 {
-                let scale = 1.0 / maxAbs
-                audioData = audioData.map { $0 * scale }
-            }
-        }
-
-        return audioData
     }
 
     private func processSegmentsOptimized(_ segmentOutput: MLMultiArray, chunkOffset: Double) -> [VADSegment] {
