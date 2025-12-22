@@ -79,6 +79,7 @@ nvidia = [
     "torchvision==0.23.0",
     "pyannote.audio",
     "kaldifeat",
+    "scikit-learn==1.7.2",
     "cudf-cu12==25.8.*",
     "dask-cudf-cu12==25.8.*",
     "cuml-cu12==25.8.*",
