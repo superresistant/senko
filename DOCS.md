@@ -3,7 +3,7 @@
 ### `Diarizer`
 ```python
 import senko
-diarizer = senko.Diarizer(device='auto', vad='auto', clustering='auto', warmup=True, quiet=True)
+diarizer = senko.Diarizer(device='auto', vad='auto', clustering='auto', warmup=True, quiet=True, mer_cos=None)
 ```
 - `device`: Device to use for VAD & embeddings stage (`auto`, `cuda`, `coreml`, `cpu`)
     - `auto` automatically selects `coreml` if on macOS, if not, then `cuda`, if not, then `cpu`
@@ -19,6 +19,12 @@ diarizer = senko.Diarizer(device='auto', vad='auto', clustering='auto', warmup=T
 - `warmup`: Warm up CAM++ embedding model and clustering objects during initialization
     - If warmup is not done, the first few runs of the pipeline will be a bit slower
 - `quiet`: Suppress progress updates and all other output to stdout
+- `mer_cos`: Override the cosine-similarity merge threshold for both spectral and UMAP+HDBSCAN clustering
+    - Must be > 0 and <= 1
+    - `None` keeps the default value from `senko/cluster/conf/*.yaml` (`0.875`)
+    - After initial clustering, clusters whose centroid cosine similarity is >= `mer_cos` are merged
+    - If you see too many speakers (over‑splitting), try lowering `mer_cos`
+    - If you see too few speakers (over‑merging), try raising `mer_cos`
 
 ### `diarize()`
 ```python

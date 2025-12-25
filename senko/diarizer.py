@@ -42,7 +42,7 @@ class AudioFormatError(Exception):
     pass
 
 class Diarizer:
-    def __init__(self, device='auto', vad='auto', clustering='auto', warmup=True, quiet=True):
+    def __init__(self, device='auto', vad='auto', clustering='auto', warmup=True, quiet=True, mer_cos=None):
 
         self.quiet = quiet
 
@@ -227,6 +227,12 @@ class Diarizer:
         with open(config.SPECTRAL_YAML, 'r') as spectral_yaml, open(config.UMAP_HDBSCAN_YAML, 'r') as umap_hdbscan_yaml:
             self.spectral_config = yaml.safe_load(spectral_yaml)
             self.umap_hdbscan_config = yaml.safe_load(umap_hdbscan_yaml)
+
+            if mer_cos is not None:
+                if not (0 < mer_cos <= 1):
+                    raise ValueError("mer_cos must be > 0 and <= 1")
+                self.spectral_config['cluster']['args']['mer_cos'] = mer_cos
+                self.umap_hdbscan_config['cluster']['args']['mer_cos'] = mer_cos
 
             # Determine clustering location based on parameter or auto-selection
             if self.device != 'cuda':
