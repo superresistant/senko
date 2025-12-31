@@ -4,8 +4,13 @@ from pathlib import Path
 import importlib.resources
 
 DARWIN = platform.system() == 'Darwin'
-FBANK_LIB_EXTENSION = '.dylib' if DARWIN else '.so'
-FBANK_LIB_FILENAME = f'libfbank_extractor{FBANK_LIB_EXTENSION}'
+WINDOWS = platform.system() == 'Windows'
+if DARWIN:
+    FBANK_LIB_FILENAME = 'libfbank_extractor.dylib'
+elif WINDOWS:
+    FBANK_LIB_FILENAME = 'fbank_extractor.pyd'
+else:
+    FBANK_LIB_FILENAME = 'libfbank_extractor.so'
 
 # By default, we assume a standard installation where all data is located relative to the package's installed location
 PACKAGE_DIR = importlib.resources.files('senko')

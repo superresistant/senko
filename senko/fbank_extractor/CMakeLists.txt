@@ -2,8 +2,14 @@
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Optimization flags
-set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -ffast-math -funroll-loops")
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} /O2 /fp:fast")
+    add_definitions(-D_USE_MATH_DEFINES)
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -ffast-math -funroll-loops")
+endif()
 
 # Global build settings
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)

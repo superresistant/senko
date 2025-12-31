@@ -7,6 +7,10 @@
 #include <cmath>
 #include <complex>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 int round_up_to_nearest_power_of_two(int n);
 
 void init_bit_reverse_index(std::vector<int> &bit_rev_index, int n);

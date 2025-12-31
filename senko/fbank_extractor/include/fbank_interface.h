@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
+  #define FBANK_EXPORT __declspec(dllexport)
+#else
+  #define FBANK_EXPORT
+#endif
+
     typedef struct {
         float* data;                    // Flattened feature array
         size_t* frames_per_subsegment;  // Number of frames for each subsegment
@@ -18,17 +24,17 @@ extern "C" {
     typedef struct FbankExtractorWrapper* FbankExtractorHandle;
 
     // Create/destroy extractor
-    FbankExtractorHandle create_fbank_extractor();
-    void destroy_fbank_extractor(FbankExtractorHandle handle);
-
+    FBANK_EXPORT FbankExtractorHandle create_fbank_extractor();
+    FBANK_EXPORT void destroy_fbank_extractor(FbankExtractorHandle handle);
+    
     // Extract features
-    FbankFeatures extract_fbank_features(FbankExtractorHandle handle,
-                                        const char* wav_path,
-                                        float* subsegments_array,
-                                        size_t num_subsegments);
-
+    FBANK_EXPORT FbankFeatures extract_fbank_features(FbankExtractorHandle handle,
+                                         const char* wav_path,
+                                         float* subsegments_array,
+                                         size_t num_subsegments);
+    
     // Free features
-    void free_fbank_features(FbankFeatures* features);
+    FBANK_EXPORT void free_fbank_features(FbankFeatures* features);
 
 #ifdef __cplusplus
 }

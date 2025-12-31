@@ -9,9 +9,39 @@
 #include <span>
 #include <thread>
 #include <vector>
+#ifdef _WIN32
+#define NOMINMAX
+#include <io.h>
+#include <fcntl.h>
+#include <windows.h>
+#include <sys/stat.h>
+#define open _open
+#define close _close
+#ifndef O_RDONLY
+#define O_RDONLY _O_RDONLY
+#endif
+#ifndef _O_BINARY
+#define _O_BINARY 0x8000
+#endif
+// pread implementation for Windows
+static long long pread_win(int fd, void* buf, size_t count, long long offset) {
+    HANDLE h = (HANDLE)_get_osfhandle(fd);
+    if (h == INVALID_HANDLE_VALUE) return -1;
+    OVERLAPPED ov = {0};
+    ov.Offset = (DWORD)(offset & 0xFFFFFFFF);
+    ov.OffsetHigh = (DWORD)(offset >> 32);
+    DWORD read = 0;
+    if (!ReadFile(h, buf, (DWORD)count, &read, &ov)) {
+        if (GetLastError() == ERROR_HANDLE_EOF) return 0;
+        return -1;
+    }
+    return (long long)read;
+}
+#else
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#endif
 
 namespace {
 
@@ -36,11 +66,15 @@ static uint32_t read_u32_le(const uint8_t* data, size_t offset) {
            static_cast<uint32_t>(data[offset + 3]) << 24;
 }
 
-static bool read_fully(int fd, void* buffer, size_t count, off_t offset) {
+static bool read_fully(int fd, void* buffer, size_t count, int64_t offset) {
     uint8_t* dst = static_cast<uint8_t*>(buffer);
     size_t total = 0;
     while (total < count) {
-        ssize_t n = pread(fd, dst + total, count - total, offset + static_cast<off_t>(total));
+#ifdef _WIN32
+        long long n = pread_win(fd, dst + total, count - total, offset + static_cast<long long>(total));
+#else
+        ssize_t n = pread(fd, dst + total, count - total, offset + (off_t)total);
+#endif
         if (n <= 0) {
             return false;
         }
@@ -50,8 +84,13 @@ static bool read_fully(int fd, void* buffer, size_t count, off_t offset) {
 }
 
 static bool parse_wav_header(int fd, WavInfo& info) {
+#ifdef _WIN32
+    struct _stat64 st;
+    if (_fstat64(fd, &st) != 0) {
+#else
     struct stat st;
     if (fstat(fd, &st) != 0) {
+#endif
         return false;
     }
     const int64_t file_size = static_cast<int64_t>(st.st_size);
@@ -129,7 +168,11 @@ static bool parse_wav_header(int fd, WavInfo& info) {
 class WavStreamReader {
 public:
     explicit WavStreamReader(const std::string& path) {
+#ifdef _WIN32
+        fd_ = open(path.c_str(), O_RDONLY | _O_BINARY);
+#else
         fd_ = open(path.c_str(), O_RDONLY);
+#endif
         if (fd_ < 0) {
             return;
         }
@@ -177,8 +220,13 @@ public:
         const size_t to_read = std::min(frame_count, available);
         out.resize(to_read);
 
+#ifdef _WIN32
+        const int64_t byte_offset = static_cast<int64_t>(info_.data_offset) +
+            static_cast<int64_t>(start_frame * bytes_per_frame_);
+#else
         const off_t byte_offset = static_cast<off_t>(info_.data_offset) +
             static_cast<off_t>(start_frame * bytes_per_frame_);
+#endif
         const size_t byte_count = to_read * bytes_per_frame_;
 
         const float scale = 1.0f / 32768.0f;

@@ -6,6 +6,11 @@
 #include <vector>
 #include "frame_extraction_options.h"
 #include <random>
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 class FramePreprocessor {
 public:
