@@ -21,6 +21,13 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/cpp/*.cpp")
 # Build shared library
 add_library(fbank_extractor MODULE ${SOURCES})
 
+# MSVC treats .pyd as a runtime artifact; set its output dir so editable installs find it in build/
+if(MSVC)
+    set_target_properties(fbank_extractor PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+endif()
+
 # Set proper suffix based on platform
 if(APPLE)
     set_target_properties(fbank_extractor PROPERTIES SUFFIX ".dylib")
