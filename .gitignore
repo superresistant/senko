@@ -23,3 +23,4 @@ audio/
 
 examples/*
 !examples/*.py
+build4/

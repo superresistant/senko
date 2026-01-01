@@ -2,8 +2,14 @@
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Optimization flags
-set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -ffast-math -funroll-loops")
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} /O2 /fp:fast")
+    add_definitions(-D_USE_MATH_DEFINES)
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -ffast-math -funroll-loops")
+endif()
 
 # Global build settings
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -14,6 +20,13 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/cpp/*.cpp")
 
 # Build shared library
 add_library(fbank_extractor MODULE ${SOURCES})
+
+# MSVC treats .pyd as a runtime artifact; set its output dir so editable installs find it in build/
+if(MSVC)
+    set_target_properties(fbank_extractor PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+endif()
 
 # Set proper suffix based on platform
 if(APPLE)
